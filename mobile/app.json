@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "(Re)Sources Relationnelles",
+    "slug": "resources-relationnelles",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "fr.ressources-relationnelles.app",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      },
+      "package": "fr.ressources_relationnelles.app",
+      "usesClearTextTraffic": true
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-image-picker",
+      "expo-asset",
+      "expo-font",
+      "expo-av"
+    ]
+  }
+}

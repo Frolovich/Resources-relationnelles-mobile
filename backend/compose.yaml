@@ -1,0 +1,43 @@
+# ================================================
+# Docker Compose — Backend Symfony uniquement
+# ================================================
+# Ce fichier gère UNIQUEMENT le conteneur PHP/Apache
+# pour le backend Symfony.
+#
+# MySQL et NGINX médias sont gérés séparément
+# dans leurs propres dossiers.
+#
+# Usage :
+#   cd backend
+#   docker compose up --build -d
+#   docker compose down
+# ================================================
+
+name: ressource_backend
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend.ressource
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      # Monter le code pour le dev (hot reload)
+      - .:/var/www/backend
+      # Monter les médias pour l'upload
+      - ../nginx/media:/var/www/media
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      DATABASE_URL: "mysql://user:user@host.docker.internal:3306/ressource?serverVersion=8.2&charset=utf8mb4"
+      JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+      JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+      JWT_PASSPHRASE: "5a9f860e4de9720fd68557fd1935a62832e6cee83e86fd5c6166a3ea09d0d5b7"
+      CORS_ALLOW_ORIGIN: "^https?://(localhost|127\\.0\\.0\\.1|192\\.168\\.1\\.42)(:[0-9]+)?$"
+      MAILER_DSN: "smtp://m.lyahevich89%40gmail.com:ztiqmmlvdyczqqay@smtp.gmail.com:587"
+      MAILER_FROM: "m.lyahevich89@gmail.com"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

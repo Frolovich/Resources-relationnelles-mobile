@@ -1,0 +1,5 @@
+# Ignorer les fichiers médias uploadés, garder la structure
+media/images/*
+media/videos/*
+!media/images/.gitkeep
+!media/videos/.gitkeep

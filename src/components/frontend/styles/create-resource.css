@@ -1,0 +1,216 @@
+/* ========================
+   CREATE RESOURCE PAGE
+   ======================== */
+.create-main {
+  flex: 1;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+  width: 100%;
+}
+
+.create-title {
+  font-size: 24px;
+  color: #f1f5f9;
+  margin: 0 0 24px;
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-form textarea {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: white;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.create-form textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+}
+
+.create-form textarea.error { border-color: #ef4444; }
+
+.create-form select {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.create-form select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+}
+
+.create-form select.error { border-color: #ef4444; }
+
+.file-input {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px dashed #334155;
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 14px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.file-input.error { border-color: #ef4444; }
+
+.file-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #1e293b;
+  margin-top: 8px;
+}
+
+.file-name {
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.create-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-secondary {
+  padding: 12px 20px;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.btn-secondary:hover { background: #334155; color: white; }
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .create-main { padding: 16px 12px 40px; }
+  .create-title { font-size: 20px; }
+  .create-actions { flex-direction: column; }
+  .btn-primary, .btn-secondary { width: 100%; }
+}
+
+/* ========================
+   UPLOAD SUCCESS SCREEN
+   ======================== */
+.upload-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 24px;
+  background: #1e293b;
+  border: 1px solid #22c55e;
+  border-radius: 16px;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.upload-success-icon {
+  width: 56px;
+  height: 56px;
+  background: #16a34a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  font-weight: bold;
+}
+
+.upload-success-title {
+  font-size: 20px;
+  color: #4ade80;
+  margin: 0;
+}
+
+.upload-success-pending {
+  color: #94a3b8;
+  font-size: 14px;
+  margin: 0;
+}
+
+.upload-success-details {
+  width: 100%;
+  max-width: 360px;
+  background: #0f172a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.upload-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid #1e293b;
+  gap: 12px;
+}
+
+.upload-detail-row:last-child { border-bottom: none; }
+
+.upload-detail-key {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.upload-detail-val {
+  font-size: 13px;
+  color: #f1f5f9;
+  text-align: right;
+  word-break: break-all;
+}
+
+.upload-success-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ========================
+   LOADING STATE
+   ======================== */
+.btn-primary:disabled {
+  background: #334155;
+  cursor: not-allowed;
+  position: relative;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .upload-success { padding: 24px 16px; }
+  .upload-success-actions { flex-direction: column; width: 100%; }
+}

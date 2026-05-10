@@ -1,0 +1,436 @@
+{
+  "info": {
+    "name": "(Re)Sources Relationnelles API",
+    "description": "Collection complète pour tester tous les endpoints de l'API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman@test.com\",\n  \"password\": \"Test1234!\",\n  \"name\": \"Postman\",\n  \"surname\": \"Test\",\n  \"birthdate\": \"1990-01-01\",\n  \"termsAccepted\": true,\n  \"privacyPolicyAccepted\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["var json = pm.response.json();", "pm.collectionVariables.set('token', json.token);"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman@test.com\",\n  \"password\": \"Test1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me (profil)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Resolve Email (by nickname)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/resolve-email?nickname=koko"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Password Reset",
+      "item": [
+        {
+          "name": "Request Reset",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/password/request",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman@test.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/password/reset",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"PASTE_TOKEN_HERE\",\n  \"password\": \"NewPass1234!\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Resources (Public)",
+      "item": [
+        {
+          "name": "List Resources",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/public/resources"
+          }
+        },
+        {
+          "name": "List with Search",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/public/resources?search=video"
+          }
+        },
+        {
+          "name": "List by Category",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/public/resources?category=1"
+          }
+        },
+        {
+          "name": "List sorted by Views",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/public/resources?sort=views"
+          }
+        },
+        {
+          "name": "Get Resource by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/public/resources/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Resources (Authenticated)",
+      "item": [
+        {
+          "name": "My Resources",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/my-resources",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Upload Resource",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/resources/upload",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" },
+                { "key": "description", "value": "Test upload from Postman" },
+                { "key": "category_id", "value": "1" },
+                { "key": "restreint", "value": "0" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Favorites",
+      "item": [
+        {
+          "name": "List Favorites",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/favorites",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Add Favorite",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/favorites/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Remove Favorite",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/favorites/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Progress",
+      "item": [
+        {
+          "name": "Get Progress",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/user-resources/1/progress",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Update Progress",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/user-resources/1/progress",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"progress\": 50,\n  \"exploited\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "List Exploited",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/user-resources/exploited",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Categories (API Platform)",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/categories",
+            "header": [{ "key": "Accept", "value": "application/ld+json" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Moderation (ROLE_MODERATOR)",
+      "item": [
+        {
+          "name": "Pending Resources",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/moderation/resources",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Approve Resource",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/moderation/resources/1/approve",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Refuse Resource",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/moderation/resources/1/refuse",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Contenu non conforme\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Pending Comments",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/moderation/comments",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Approve Comment",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/moderation/comments/1/approve",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Suspend User",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/moderation/users/USER_ID/suspend",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Comportement inapproprié\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Admin (ROLE_ADMIN)",
+      "item": [
+        {
+          "name": "Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/stats",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Export CSV",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/stats/export",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/users",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Toggle User Status",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/admin/users/USER_ID/toggle-status",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/admin/users/USER_ID",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "List Resources (Admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/resources",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Delete Resource",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/admin/resources/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Change Resource Category",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/admin/resources/1/category",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": 2\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Super Admin (ROLE_SUPER_ADMIN)",
+      "item": [
+        {
+          "name": "List Users with Roles",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/super-admin/users",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Change User Role",
+          "request": {
+            "method": "PATCH",
+            "url": "{{base_url}}/api/super-admin/users/USER_ID/role",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"ROLE_MODERATOR\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Account (Admin/Moderator)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/super-admin/create-account",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"new.modo@test.com\",\n  \"name\": \"New\",\n  \"surname\": \"Moderator\",\n  \"password\": \"Modo1234!\",\n  \"role\": \"ROLE_MODERATOR\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Activity Logs",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/super-admin/logs",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    }
+  ]
+}

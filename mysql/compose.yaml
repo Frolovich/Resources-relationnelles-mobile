@@ -1,0 +1,97 @@
+#
+# Will start all docker constructions with MySQL
+#
+# Password and network ports are handled in .env file
+#
+# IMPORTANT: Under Windows, it is VERY important to install a WSL 2 Distro and enable IT
+#            See https://learn.microsoft.com/fr-fr/windows/wsl/install-manual#step-4---download-the-linux-kernel-update-package
+
+name: ressource_mysql
+services:
+  # https://hub.docker.com/_/mysql
+  mysql_ressource:
+    image: mysql:8.2.0
+    restart: unless-stopped
+    env_file: ./.env
+    container_name: mysql.db.ressource
+    hostname: mysql.db.ressource
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_USER_PASSWORD}
+      MYSQL_ALLOW_EMPTY_PASSWORD: no
+    ports:
+      - "${DB_LOCAL_PORT}:${DB_DOCKER_PORT}"
+    # We have two volumes
+    # one file=bind: the dump of the db. This should prevail docker to
+    #                mount a file 'as' a directory
+    # one volume=volume: where to keep datas. It is a directory
+    volumes:
+      - type: bind
+        source: ./mysql_docker.sql
+        target: /docker-entrypoint-initdb.d/setup.sql
+        read_only: true
+      - type: volume
+        source: vol_mysql_ressource
+        target: /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "localhost", "-P${DB_DOCKER_PORT}", "-u${DB_USER}", "-p${DB_USER_PASSWORD}", "-e", "SELECT 1 FROM ressource.users;"]
+#    test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD --port=${DB_DOCKER_PORT}
+      start_period: 15s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Web client for the data base
+  # 10x lighter than PhpMyAdmin, and works for almost all Data Base
+  # https://hub.docker.com/r/shyim/adminerevo
+  adminer_revo_ressource:
+    image: ghcr.io/shyim/adminerevo:latest
+    container_name: adminer.revo.ressource
+    hostname: adminer.revo.ressource
+
+    depends_on:
+      mysql_ressource:
+        condition: service_healthy
+
+    restart: unless-stopped
+    env_file: "./.env"
+    ports:
+      - "${ADM_LOCAL_PORT}:${ADM_DOCKER_PORT}"
+    environment:
+      # server = MySQL as Data Base as explain in the documentation
+      ADMINER_DEFAULT_DRIVER: server
+      ADMINER_DEFAULT_USER: ${DB_USER}
+      ADMINER_DEFAULT_PASSWORD: ${DB_USER_PASSWORD}
+      ADMINER_DEFAULT_DB: ${DB_DATABASE}
+      ADMINER_DEFAULT_SERVER: mysql.db.ressource
+
+volumes:
+  vol_mysql_ressource:
+
+#
+# Run all  : docker compose up --build
+# Stop all : docker-compose down
+# Stop all and delte all img : docker-compose down --rmi all
+#
+
+
+# https://hub.docker.com/_/phpmyadmin
+#  phpmyadmin_source:
+#    image: phpmyadmin:latest
+#    depends_on:
+#      - mysql_source
+#    container_name: phpmyadmin_source
+#    env_file: ./.env
+#    links:
+#      - mysql_source
+#    restart: unless-stopped
+#    ports:
+#      - $PMA_LOCAL_PORT:$PMA_DOCKER_PORT
+#    environment:
+#      - PMA_HOST=mysql_source
+#      - PMA_PORT=$DB_DOCKER_PORT
+#      - PMA_USER=root
+#      - PMA_PASSWORD=$DB_ROOT_PASSWORD
+#      - PMA_ARBITRARY=1

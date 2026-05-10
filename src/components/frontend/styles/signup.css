@@ -1,0 +1,250 @@
+/* ========================
+   SIGNUP PAGE
+   ======================== */
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 60px;
+}
+
+.signup-hero {
+  text-align: center;
+  padding: 36px 20px 20px;
+}
+
+.signup-hero h2 {
+  font-size: 26px;
+  color: #f1f5f9;
+  margin: 0 0 8px;
+}
+
+.signup-hero p {
+  color: #94a3b8;
+  margin: 0;
+  font-size: 15px;
+}
+
+/* ========================
+   FORM
+   ======================== */
+.signup-form {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.signup-form input[type="text"],
+.signup-form input[type="email"],
+.signup-form input[type="password"],
+.signup-form input[type="date"] {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  min-width: 0;
+}
+
+.signup-form input::placeholder {
+  color: #475569;
+}
+
+.signup-form input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.signup-form input.error {
+  border-color: #ef4444;
+}
+
+.signup-form button[type="submit"] {
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 15px;
+  transition: background 0.2s;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.signup-form button[type="submit"]:hover {
+  background: #1e40af;
+}
+
+.signup-form button[type="submit"]:disabled {
+  background: #475569;
+  cursor: not-allowed;
+}
+
+/* ========================
+   RGPD BLOC
+   ======================== */
+.rgpd-block {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rgpd-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.rgpd-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #cbd5e1;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.rgpd-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: #2563eb;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.rgpd-row a {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+.rgpd-row a:hover {
+  color: #93c5fd;
+}
+
+.rgpd-row.optional {
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* ========================
+   CAPTCHA
+   ======================== */
+.captcha-group {
+  align-items: flex-start;
+  overflow-x: auto;
+}
+
+/* ========================
+   BOTTOM LINK
+   ======================== */
+.login-link {
+  text-align: center;
+  margin-top: 16px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.login-link a {
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+/* ========================
+   RESPONSIVE — Tablette
+   ======================== */
+@media (max-width: 768px) {
+  .signup-form {
+    max-width: 100%;
+  }
+
+  .signup-hero h2 {
+    font-size: 22px;
+  }
+
+  .signup-hero {
+    padding: 24px 16px 16px;
+  }
+}
+
+/* ========================
+   RESPONSIVE — Mobile
+   ======================== */
+@media (max-width: 480px) {
+  .content {
+    padding: 0 12px 40px;
+  }
+
+  .signup-hero h2 {
+    font-size: 20px;
+  }
+
+  .signup-hero p {
+    font-size: 13px;
+  }
+
+  .signup-form input[type="text"],
+  .signup-form input[type="email"],
+  .signup-form input[type="password"],
+  .signup-form input[type="date"] {
+    font-size: 16px; /* évite le zoom auto sur iOS */
+  }
+
+  .rgpd-block {
+    padding: 12px;
+  }
+
+  .rgpd-row {
+    font-size: 13px;
+  }
+
+  .captcha-group {
+    transform-origin: left;
+  }
+}
+
+/* ========================
+   ALERT ERROR
+   ======================== */
+.alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #fca5a5;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.5;
+}

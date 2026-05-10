@@ -1,0 +1,429 @@
+/* ================================================
+   COMMON STYLES — partagé entre toutes les pages
+   ================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #0f172a;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+/* ========================
+   PAGE WRAPPER
+   ======================== */
+.page,
+.login-page,
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+}
+
+/* ========================
+   NAVBAR
+   ======================== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #1e3a8a, #2563eb);
+  padding: 14px 30px;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 12px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 18px;
+  color: white;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.nav-buttons a {
+  text-decoration: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: 0.2s;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.nav-buttons a:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.15);
+  padding: 5px 10px;
+  border-radius: 20px;
+  transition: 0.2s;
+  user-select: none;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.switch:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.circle {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ========================
+   FORM GROUP
+   ======================== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.form-group label,
+.field-label {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.label-fr {
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.label-sep {
+  color: #475569;
+}
+
+.label-en {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ========================
+   INPUTS
+   ======================== */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="date"] {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  min-width: 0;
+}
+
+.form-group input::placeholder {
+  color: #475569;
+}
+
+.form-group input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.form-group input.error {
+  border-color: #ef4444;
+}
+
+.form-group small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 12px;
+}
+
+/* ========================
+   TOOLTIP
+   ======================== */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+}
+
+.tooltip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: #334155;
+  color: #94a3b8;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: help;
+  border: 1px solid #475569;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.tooltip-icon:hover {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.tooltip-box {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  width: 200px;
+  line-height: 1.5;
+  z-index: 200;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  pointer-events: none;
+  white-space: normal;
+}
+
+.tooltip-box::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #334155;
+}
+
+/* ========================
+   COOKIE BANNER
+   ======================== */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1e293b;
+  border-top: 2px solid #2563eb;
+  padding: 16px 24px;
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+}
+
+.cookie-content {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cookie-content h3 {
+  color: white;
+  margin: 0;
+  font-size: 15px;
+}
+
+.cookie-content p {
+  color: #cbd5e1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cookie-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cookie-buttons .btn-accept {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.cookie-buttons .btn-accept:hover {
+  background: #1e40af;
+}
+
+.cookie-buttons .btn-reject {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #475569;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cookie-buttons .btn-reject:hover {
+  background: #334155;
+  color: white;
+}
+
+/* ========================
+   FOOTER
+   ======================== */
+.footer {
+  padding: 30px 40px;
+  background: #1e293b;
+  border-top: 1px solid #334155;
+  margin-top: auto;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.footer-column button {
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #94a3b8;
+  padding: 0;
+}
+
+.footer-column button:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+/* ================================================
+   RESPONSIVE — Tablette (≤ 768px)
+   ================================================ */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .logo {
+    font-size: 15px;
+  }
+
+  .nav-buttons {
+    gap: 6px;
+  }
+
+  .nav-buttons a {
+    padding: 5px 8px;
+    font-size: 13px;
+  }
+
+  .footer {
+    padding: 24px 20px;
+  }
+
+  .footer-container {
+    gap: 20px;
+  }
+
+  .cookie-banner {
+    padding: 14px 16px;
+  }
+
+  .tooltip-box {
+    width: 160px;
+    font-size: 11px;
+  }
+}
+
+/* ================================================
+   RESPONSIVE — Mobile (≤ 480px)
+   ================================================ */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 12px;
+  }
+
+  .logo {
+    font-size: 13px;
+  }
+
+  .nav-buttons a {
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
+  .switch {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .footer-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cookie-buttons {
+    flex-direction: column;
+  }
+
+  .cookie-buttons .btn-accept,
+  .cookie-buttons .btn-reject {
+    width: 100%;
+    text-align: center;
+  }
+}
