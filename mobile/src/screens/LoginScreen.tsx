@@ -66,6 +66,8 @@ export function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
+            accessibilityLabel="Adresse email"
+            accessibilityRole="none"
           />
 
           <Text style={styles.label}>Mot de passe</Text>
@@ -76,12 +78,16 @@ export function LoginScreen() {
             placeholder="••••••••"
             placeholderTextColor="#64748b"
             secureTextEntry
+            accessibilityLabel="Mot de passe"
+            accessibilityRole="none"
           />
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel={loading ? 'Connexion en cours' : 'Se connecter'}
           >
             <Text style={styles.buttonText}>
               {loading ? 'Connexion...' : 'Se connecter'}

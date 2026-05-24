@@ -125,7 +125,7 @@ export default function Login() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit} noValidate>
-          {error && <div className="login-error">{error}</div>}
+          {error && <div className="login-error" role="alert">{error}</div>}
 
           <div className="form-group">
             <label htmlFor="identifier">{t.identifier}</label>

@@ -120,7 +120,7 @@ export function HomeScreen() {
   return (
     <View style={styles.container}>
       {/* Search bar */}
-      <View style={styles.searchContainer}>
+      <View style={styles.searchContainer} accessibilityRole="search">
         <Ionicons name="search" size={20} color="#64748b" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
@@ -130,6 +130,7 @@ export function HomeScreen() {
           placeholderTextColor="#64748b"
           returnKeyType="search"
           onSubmitEditing={loadData}
+          accessibilityLabel="Rechercher des ressources"
         />
       </View>
 

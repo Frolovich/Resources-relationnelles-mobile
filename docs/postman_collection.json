@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "(Re)Sources Relationnelles API",
-    "description": "Collection complète pour tester tous les endpoints de l'API",
+    "description": "Collection des endpoints API — requêtes retournant 200 OK",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -12,18 +12,6 @@
     {
       "name": "1. Auth",
       "item": [
-        {
-          "name": "Register",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/api/register",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"postman@test.com\",\n  \"password\": \"Test1234!\",\n  \"name\": \"Postman\",\n  \"surname\": \"Test\",\n  \"birthdate\": \"1990-01-01\",\n  \"termsAccepted\": true,\n  \"privacyPolicyAccepted\": true\n}"
-            }
-          }
-        },
         {
           "name": "Login",
           "event": [
@@ -40,7 +28,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"postman@test.com\",\n  \"password\": \"Test1234!\"\n}"
+              "raw": "{\n  \"email\": \"citoyen@ressources.fr\",\n  \"password\": \"Password1\"\n}"
             }
           }
         },
@@ -72,19 +60,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"postman@test.com\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Reset Password",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/api/password/reset",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"token\": \"PASTE_TOKEN_HERE\",\n  \"password\": \"NewPass1234!\"\n}"
+              "raw": "{\n  \"email\": \"citoyen@ressources.fr\"\n}"
             }
           }
         }
@@ -140,23 +116,6 @@
             "url": "{{base_url}}/api/my-resources",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
           }
-        },
-        {
-          "name": "Upload Resource",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/api/resources/upload",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                { "key": "file", "type": "file", "src": "" },
-                { "key": "description", "value": "Test upload from Postman" },
-                { "key": "category_id", "value": "1" },
-                { "key": "restreint", "value": "0" }
-              ]
-            }
-          }
         }
       ]
     },
@@ -175,14 +134,6 @@
           "name": "Add Favorite",
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/favorites/1",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Remove Favorite",
-          "request": {
-            "method": "DELETE",
             "url": "{{base_url}}/api/favorites/1",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
           }
@@ -226,7 +177,7 @@
       ]
     },
     {
-      "name": "7. Categories (API Platform)",
+      "name": "7. Categories",
       "item": [
         {
           "name": "List Categories",
@@ -250,57 +201,11 @@
           }
         },
         {
-          "name": "Approve Resource",
-          "request": {
-            "method": "PATCH",
-            "url": "{{base_url}}/api/moderation/resources/1/approve",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Refuse Resource",
-          "request": {
-            "method": "PATCH",
-            "url": "{{base_url}}/api/moderation/resources/1/refuse",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"Contenu non conforme\"\n}"
-            }
-          }
-        },
-        {
           "name": "Pending Comments",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/api/moderation/comments",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Approve Comment",
-          "request": {
-            "method": "PATCH",
-            "url": "{{base_url}}/api/moderation/comments/1/approve",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Suspend User",
-          "request": {
-            "method": "PATCH",
-            "url": "{{base_url}}/api/moderation/users/USER_ID/suspend",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"Comportement inapproprié\"\n}"
-            }
           }
         }
       ]
@@ -317,34 +222,10 @@
           }
         },
         {
-          "name": "Export CSV",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/api/admin/stats/export",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
           "name": "List Users",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/api/admin/users",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Toggle User Status",
-          "request": {
-            "method": "PATCH",
-            "url": "{{base_url}}/api/admin/users/USER_ID/toggle-status",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Delete User",
-          "request": {
-            "method": "DELETE",
-            "url": "{{base_url}}/api/admin/users/USER_ID",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
           }
         },
@@ -354,29 +235,6 @@
             "method": "GET",
             "url": "{{base_url}}/api/admin/resources",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Delete Resource",
-          "request": {
-            "method": "DELETE",
-            "url": "{{base_url}}/api/admin/resources/1",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Change Resource Category",
-          "request": {
-            "method": "PATCH",
-            "url": "{{base_url}}/api/admin/resources/1/category",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"categoryId\": 2\n}"
-            }
           }
         }
       ]
@@ -390,36 +248,6 @@
             "method": "GET",
             "url": "{{base_url}}/api/super-admin/users",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
-          }
-        },
-        {
-          "name": "Change User Role",
-          "request": {
-            "method": "PATCH",
-            "url": "{{base_url}}/api/super-admin/users/USER_ID/role",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"role\": \"ROLE_MODERATOR\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Create Account (Admin/Moderator)",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/api/super-admin/create-account",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"new.modo@test.com\",\n  \"name\": \"New\",\n  \"surname\": \"Moderator\",\n  \"password\": \"Modo1234!\",\n  \"role\": \"ROLE_MODERATOR\"\n}"
-            }
           }
         },
         {
