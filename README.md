@@ -56,7 +56,7 @@ docker compose up -d
 
 **Pourquoi :** La base de données stocke les utilisateurs, ressources, commentaires, favoris. Sans elle, rien ne fonctionne.
 
-**Vérification :** Ouvrir http://localhost:8103 (Adminer) — vous devez voir l'interface de gestion de la BDD.
+**Vérification :** Ouvrir d(Adminer) — vous devez voir l'interface de gestion de la BDD.
 
 ### Étape 3 — Lancer NGINX (serveur de médias)
 
@@ -200,18 +200,90 @@ Pour Expo : `Ctrl+C` dans le terminal.
 
 ## Tests
 
+> **Important :** Les tests backend s'exécutent **uniquement via Docker** (le code PHP et ses dépendances vivent dans le conteneur). Les boutons "Run Test" de l'éditeur ne fonctionneront pas pour le backend.
+
 ### Tests backend (PHPUnit)
 
+Les tests nécessitent que les conteneurs MySQL et Backend soient lancés.
+
 ```powershell
-docker exec backend.ressource php bin/phpunit
+# Lancer tous les tests (26 tests)
+docker exec -e APP_ENV=test backend.ressource php bin/phpunit
+
+# Avec détail par test
+docker exec -e APP_ENV=test backend.ressource php bin/phpunit --testdox
 ```
+
+#### Lancer un groupe de tests spécifique
+
+```powershell
+# Tests unitaires uniquement (Entity — pas de BDD)
+docker exec -e APP_ENV=test backend.ressource php bin/phpunit tests/Unit/
+
+# Tests fonctionnels (Login, Registration)
+docker exec -e APP_ENV=test backend.ressource php bin/phpunit tests/Functional/
+
+# Tests d'intégration (flux complet)
+docker exec -e APP_ENV=test backend.ressource php bin/phpunit tests/Integration/
+```
+
+#### Lancer un seul fichier ou un seul test
+
+```powershell
+# Un fichier
+docker exec -e APP_ENV=test backend.ressource php bin/phpunit tests/Unit/Entity/UserTest.php
+
+# Un test précis (par nom de méthode)
+docker exec -e APP_ENV=test backend.ressource php bin/phpunit --filter testSetEmail
+```
+
+#### Liste des tests backend
+
+| Fichier | Type | Ce qu'il teste |
+|---------|------|----------------|
+| `tests/Unit/Entity/UserTest.php` | Unitaire | Création User, UUID, rôles, RGPD, soft delete |
+| `tests/Unit/Entity/ResourceTest.php` | Unitaire | Création Resource, statut, compteurs, type |
+| `tests/Functional/LoginTest.php` | Fonctionnel | Connexion valide, mot de passe invalide |
+| `tests/Functional/RegistrationTest.php` | Fonctionnel | Inscription, champs manquants, doublon email |
+| `tests/Integration/FullFlowTest.php` | Intégration | Flux complet utilisateur, reset mot de passe |
+| `tests/Controller/HomeControllerTest.php` | Fonctionnel | Endpoint public /api/public/resources |
+
+---
 
 ### Tests mobile (Jest)
 
+Les tests mobile s'exécutent en local (Node.js requis).
+
 ```powershell
 cd mobile
-npm test
+
+# Lancer tous les tests (23 tests)
+npm test -- --watchAll=false
 ```
+
+#### Lancer un fichier ou un test spécifique
+
+```powershell
+cd mobile
+
+# Un fichier
+npx jest __tests__/services/authService.test.ts --watchAll=false
+
+# Un test par nom
+npx jest --testNamePattern="should login" --watchAll=false
+
+# Avec couverture de code
+npx jest --coverage --watchAll=false
+```
+
+#### Liste des tests mobile
+
+| Fichier | Ce qu'il teste |
+|---------|----------------|
+| `__tests__/services/authService.test.ts` | Login, register, getMe, stockage token |
+| `__tests__/services/resourceService.test.ts` | Liste ressources, détail, upload, catégories |
+| `__tests__/services/favoriteService.test.ts` | Ajout/suppression favoris, liste |
+| `__tests__/components/RecaptchaModal.test.tsx` | Affichage modal CAPTCHA, callback token |
 
 ---
 
