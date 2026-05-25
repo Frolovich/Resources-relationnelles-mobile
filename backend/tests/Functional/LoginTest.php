@@ -4,9 +4,6 @@ namespace App\Tests\Functional;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-/**
- * Tests fonctionnels — Login
- */
 class LoginTest extends WebTestCase
 {
     public function testLoginWithValidCredentials(): void

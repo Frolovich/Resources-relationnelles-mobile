@@ -5,7 +5,6 @@ namespace App\Tests\Integration;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
- * Tests d'intégration — Flux complet
  * Register → Login → Upload → Moderation → Consultation
  */
 class FullFlowTest extends WebTestCase

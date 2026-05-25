@@ -4,10 +4,7 @@ namespace App\Tests\Functional;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-/**
- * Tests fonctionnels — Registration Controller
- * Nécessite une base de données de test.
- */
+
 class RegistrationTest extends WebTestCase
 {
     public function testRegisterWithValidData(): void
