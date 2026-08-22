@@ -43,6 +43,9 @@ RUN echo '<Directory /var/www/backend/public>\n\
 </Directory>' > /etc/apache2/conf-available/symfony.conf \
     && a2enconf symfony
 
+# PHP upload limits (pour vidéos jusqu'à 200 MB)
+RUN echo "upload_max_filesize = 200M\npost_max_size = 210M\nmemory_limit = 256M\nmax_execution_time = 120" > /usr/local/etc/php/conf.d/uploads.ini
+
 # Répertoire de travail
 WORKDIR /var/www/backend
 

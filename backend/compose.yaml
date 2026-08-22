@@ -27,6 +27,8 @@ services:
     volumes:
       # Monter le code pour le dev (hot reload)
       - .:/var/www/backend
+      # Volume séparé pour vendor/ — évite que le mount hôte écrase les dépendances du build
+      - backend_vendor:/var/www/backend/vendor
       # Monter les médias pour l'upload
       - ../nginx/media:/var/www/media
     environment:
@@ -41,3 +43,6 @@ services:
       MAILER_FROM: "m.lyahevich89@gmail.com"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+volumes:
+  backend_vendor:

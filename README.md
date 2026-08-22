@@ -45,18 +45,12 @@ L'ordre de lancement est important. Chaque service dépend du précédent.
 
 Ouvrir Docker Desktop et attendre qu'il soit prêt (icône verte dans la barre des tâches).
 
-**Pourquoi :** Tous les services backend tournent dans des conteneurs Docker.
-
 ### Étape 2 — Lancer MySQL (base de données)
 
 ```powershell
 cd mysql
 docker compose up -d
 ```
-
-**Pourquoi :** La base de données stocke les utilisateurs, ressources, commentaires, favoris. Sans elle, rien ne fonctionne.
-
-**Vérification :** Ouvrir d(Adminer) — vous devez voir l'interface de gestion de la BDD.
 
 ### Étape 3 — Lancer NGINX (serveur de médias)
 
@@ -65,9 +59,7 @@ cd nginx
 docker compose up -d
 ```
 
-**Pourquoi :** NGINX sert les images et vidéos uploadées. Sans lui, les photos/vidéos ne s'affichent pas sur le site ni dans l'app mobile.
-
-**Vérification :** Ouvrir http://localhost:8080/images/test.png — vous devez voir une image.
+Vérification : Ouvrir http://localhost:8080 — le serveur doit répondre (404 attendu si aucun média n'a encore été uploadé). Les images et vidéos apparaissent ici après avoir été uploadées via le site.
 
 ### Étape 4 — Lancer le Backend Symfony (API)
 
@@ -78,7 +70,7 @@ docker compose up -d
 cd ..
 **Pourquoi :** L'API gère l'authentification, les ressources, les commentaires, la modération. Le frontend et le mobile communiquent avec cette API.
 
-**Vérification :** Ouvrir http://localhost:8000/api — vous devez voir la documentation API Platform.
+**Vérification :** Ouvrir http://localhost:8000/api/docs — vous devez voir la documentation API Platform.
 
 ### Étape 5 — Lancer le Frontend React (site web)
 
@@ -87,8 +79,6 @@ Depuis la **racine du projet** :
 ```powershell
 $env:PORT=3002; npm start
 ```
-
-**Pourquoi :** C'est l'interface web que les utilisateurs voient dans leur navigateur.
 
 **Vérification :** Ouvrir http://localhost:3002 — le site s'affiche.
 
@@ -186,6 +176,18 @@ Pour Expo : `Ctrl+C` dans le terminal.
 
 ---
 
+## Réinitialiser la base de données
+
+Si la BDD est vide ou corrompue, vous pouvez la recréer depuis le fichier SQL unique :
+
+```powershell
+cmd /c "docker exec -i mysql.db.ressource mysql -u user -puser ressource < mysql\mysql_docker.sql"
+```
+
+Ce fichier contient toute la structure (tables, index, clés étrangères) et les comptes de test.
+
+---
+
 ## Dépannage
 
 | Problème | Solution |
@@ -195,6 +197,9 @@ Pour Expo : `Ctrl+C` dans le terminal.
 | L'app mobile ne se connecte pas | Vérifier que l'IP dans `mobile/src/config/api.ts` correspond à votre machine |
 | Docker ne démarre pas | Ouvrir Docker Desktop et attendre qu'il soit prêt |
 | Port déjà utilisé | `docker compose down` dans le dossier concerné, puis relancer |
+| Upload échoue (fichier trop gros) | PHP accepte jusqu'à 200 MB. Rebuild : `docker compose up --build -d` dans `backend/` |
+| "Impossible de charger le profil" | `docker exec backend.ressource php bin/console doctrine:schema:validate` |
+| BDD vide ou incohérente | Réinitialiser (voir section ci-dessus) |
 
 ---
 

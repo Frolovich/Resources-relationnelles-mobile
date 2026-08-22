@@ -35,6 +35,10 @@ security:
             jwt: ~
 
     access_control:
+        # Documentation API Platform (accès public)
+        - { path: ^/api/docs,            roles: PUBLIC_ACCESS }
+        - { path: ^/api/contexts,        roles: PUBLIC_ACCESS }
+
         # Public
         - { path: ^/api/login,           roles: PUBLIC_ACCESS }
         - { path: ^/api/register,        roles: PUBLIC_ACCESS }
