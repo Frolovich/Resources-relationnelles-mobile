@@ -3,3 +3,6 @@ media/images/*
 media/videos/*
 !media/images/.gitkeep
 !media/videos/.gitkeep
+
+# Certificats SSL générés (ne pas versionner)
+ssl/*.pem
