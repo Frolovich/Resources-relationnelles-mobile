@@ -1,0 +1,114 @@
+# ==============================================
+# (Re)Sources Relationnelles — Docker Compose unifié
+# ==============================================
+# Lance TOUS les services en une seule commande :
+#   docker compose up --build -d
+#
+# Arrête tout :
+#   docker compose down
+# ==============================================
+
+name: ressources-relationnelles
+
+services:
+
+  # ============================
+  # MySQL 8.2 — Base de données
+  # ============================
+  mysql:
+    image: mysql:8.2.0
+    container_name: mysql.db.ressource
+    hostname: mysql.db.ressource
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ressource
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+    ports:
+      - "3306:3306"
+    volumes:
+      - type: bind
+        source: ./mysql/mysql_docker.sql
+        target: /docker-entrypoint-initdb.d/setup.sql
+        read_only: true
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "localhost", "-uuser", "-puser", "-e", "SELECT 1"]
+      start_period: 15s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================
+  # Adminer — Interface BDD
+  # ============================
+  adminer:
+    image: ghcr.io/shyim/adminerevo:latest
+    container_name: adminer.revo.ressource
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8103:8080"
+    environment:
+      ADMINER_DEFAULT_DRIVER: server
+      ADMINER_DEFAULT_USER: user
+      ADMINER_DEFAULT_PASSWORD: user
+      ADMINER_DEFAULT_DB: ressource
+      ADMINER_DEFAULT_SERVER: mysql.db.ressource
+
+  # ============================
+  # Backend Symfony (PHP 8.2 + Apache)
+  # ============================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend.ressource
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/var/www/backend
+      - backend_vendor:/var/www/backend/vendor
+      - ./nginx/media:/var/www/media
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      DATABASE_URL: "mysql://user:user@mysql.db.ressource:3306/ressource?serverVersion=8.2&charset=utf8mb4"
+      JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+      JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+      JWT_PASSPHRASE: "5a9f860e4de9720fd68557fd1935a62832e6cee83e86fd5c6166a3ea09d0d5b7"
+      CORS_ALLOW_ORIGIN: "^https?://(localhost|127\\.0\\.0\\.1|10\\.192\\.152\\.132)(:[0-9]+)?$"
+      MAILER_DSN: "smtp://m.lyahevich89%40gmail.com:ztiqmmlvdyczqqay@smtp.gmail.com:587"
+      MAILER_FROM: "m.lyahevich89@gmail.com"
+
+  # ============================
+  # NGINX — Médias + HTTPS
+  # ============================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nginx.media.ressource
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/nginx-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/media/images:/var/www/media/images:ro
+      - ./nginx/media/videos:/var/www/media/videos:ro
+    entrypoint: /bin/sh -c "if [ ! -f /etc/nginx/ssl/fullchain.pem ]; then apk add --no-cache openssl && sh /etc/nginx/ssl/generate-cert.sh; fi && nginx -g 'daemon off;'"
+
+volumes:
+  mysql_data:
+  backend_vendor:

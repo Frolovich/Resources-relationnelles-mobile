@@ -7,9 +7,11 @@ Plateforme de partage de ressources relationnelles : application mobile (React N
 ```
 ├── backend/          → API Symfony 7.4 + API Platform (PHP 8.2, Apache, Docker)
 ├── mysql/            → Base de données MySQL 8.2 (Docker)
-├── nginx/            → Serveur de médias NGINX (Docker)
+├── nginx/            → Serveur de médias NGINX + HTTPS (Docker)
 ├── src/              → Frontend web React (port 3002)
 ├── mobile/           → Application mobile iOS & Android (Expo / React Native)
+├── docs/             → Documentation (plan de sécurisation, Postman, SQL)
+├── docker-compose.yml → Lancement unifié de tous les services
 ```
 
 ## Prérequis
@@ -21,88 +23,37 @@ Plateforme de partage de ressources relationnelles : application mobile (React N
 
 ---
 
-## Démarrage rapide (tout en une commande)
+## Démarrage rapide
 
-Depuis la racine du projet :
+### 1. Lancer tous les services Docker (une seule commande)
 
 ```powershell
-.\start.ps1
+docker compose up --build -d
 ```
 
-Pour arrêter :
+### 2. Première fois uniquement — installer les dépendances PHP et générer les clés JWT
 
 ```powershell
-.\stop.ps1
+docker exec backend.ressource composer install
+docker exec backend.ressource php bin/console lexik:jwt:generate-keypair --overwrite
 ```
 
----
+### 3. Lancer le frontend React
 
-## Démarrage manuel — Version Desktop (site web)
-
-L'ordre de lancement est important. Chaque service dépend du précédent.
-
-### Étape 1 — Lancer Docker Desktop
-
-Ouvrir Docker Desktop et attendre qu'il soit prêt (icône verte dans la barre des tâches).
-
-### Étape 2 — Lancer MySQL (base de données)
+Dans un autre terminal :
 
 ```powershell
-cd mysql
-docker compose up -d
-```
-
-### Étape 3 — Lancer NGINX (serveur de médias)
-
-```powershell
-cd nginx
-docker compose up -d
-```
-
-Vérification : Ouvrir http://localhost:8080 — le serveur doit répondre (404 attendu si aucun média n'a encore été uploadé). Les images et vidéos apparaissent ici après avoir été uploadées via le site.
-
-### Étape 4 — Lancer le Backend Symfony (API)
-
-```powershell
-cd backend
-docker compose up -d
-```
-cd ..
-**Pourquoi :** L'API gère l'authentification, les ressources, les commentaires, la modération. Le frontend et le mobile communiquent avec cette API.
-
-**Vérification :** Ouvrir http://localhost:8000/api/docs — vous devez voir la documentation API Platform.
-
-### Étape 5 — Lancer le Frontend React (site web)
-
-Depuis la **racine du projet** :
-
-```powershell
+npm install          # première fois uniquement
 $env:PORT=3002; npm start
 ```
 
-**Vérification :** Ouvrir http://localhost:3002 — le site s'affiche.
+### 4. Ouvrir le site
 
-### Résumé Desktop
-
-| # | Commande | Service | Port |
-|---|----------|---------|------|
-| 1 | Docker Desktop | — | — |
-| 2 | `cd mysql; docker compose up -d` | MySQL + Adminer | 3306 / 8103 |
-| 3 | `cd nginx; docker compose up -d` | Médias (images/vidéos) | 8080 |
-| 4 | `cd backend; docker compose up -d` | API Symfony | 8000 |
-| 5 | `$env:PORT=3002; npm start` | Site web React | 3002 |
+→ http://localhost:3002
 
 ---
 
-## Démarrage manuel — Version Mobile (Expo)
-
-Pour l'application mobile, il faut **les mêmes 4 premiers services** (MySQL, NGINX, Backend) + Expo au lieu du frontend React.
-
-### Étapes 1 à 4 — Identiques au Desktop
-
-Lancer Docker Desktop, puis MySQL, NGINX, et Backend (voir ci-dessus).
-
-### Étape 5 — Lancer l'application mobile (Expo)
+## Démarrage de l'application mobile (Expo)
 
 ```powershell
 cd mobile
@@ -110,47 +61,19 @@ npm install          # première fois uniquement
 npx expo start --lan
 ```
 
-**Pourquoi :** Expo compile l'application React Native et génère un QR code. Votre téléphone se connecte à l'API via votre réseau Wi-Fi local.
+Scanner le QR code avec Expo Go sur le téléphone.
 
-**Vérification :** Scanner le QR code avec l'app Expo Go sur votre téléphone. L'application doit s'ouvrir.
-
-### Important pour le mobile
-
-- Le téléphone et l'ordinateur doivent être sur le **même réseau Wi-Fi**.
-- L'adresse IP de votre machine est configurée dans `mobile/src/config/api.ts` (actuellement `192.168.1.42`). Si votre IP locale est différente, modifiez ce fichier.
-- Pour trouver votre IP : `ipconfig` dans PowerShell → chercher l'adresse IPv4 de votre adaptateur Wi-Fi.
-
-### Résumé Mobile
-
-| # | Commande | Service | Port |
-|---|----------|---------|------|
-| 1 | Docker Desktop | — | — |
-| 2 | `cd mysql; docker compose up -d` | MySQL + Adminer | 3306 / 8103 |
-| 3 | `cd nginx; docker compose up -d` | Médias (images/vidéos) | 8080 |
-| 4 | `cd backend; docker compose up -d` | API Symfony | 8000 |
-| 5 | `cd mobile; npx expo start --lan` | App mobile Expo | 8081 |
+**Important :** Le téléphone et l'ordinateur doivent être sur le même réseau Wi-Fi. L'IP de la machine est configurée dans `mobile/src/config/api.ts`.
 
 ---
 
 ## Arrêt des services
 
 ```powershell
-.\stop.ps1
-```
-
-Ou manuellement (dans n'importe quel ordre) :
-
-```powershell
-cd backend
-docker compose down
-cd ..\nginx
-docker compose down
-cd ..\mysql
 docker compose down
 ```
 
-Pour le frontend React : fermer la fenêtre PowerShell ou `Ctrl+C`.
-Pour Expo : `Ctrl+C` dans le terminal.
+Pour le frontend React : `Ctrl+C` dans le terminal.
 
 ---
 
@@ -171,20 +94,20 @@ Pour Expo : `Ctrl+C` dans le terminal.
 |---------|-----|
 | Frontend web | http://localhost:3002 |
 | API Backend | http://localhost:8000/api |
+| API Docs | http://localhost:8000/api/docs |
 | Médias (NGINX) | http://localhost:8080 |
+| HTTPS (NGINX) | https://localhost (certificat auto-signé) |
 | Adminer (BDD) | http://localhost:8103 |
 
 ---
 
 ## Réinitialiser la base de données
 
-Si la BDD est vide ou corrompue, vous pouvez la recréer depuis le fichier SQL unique :
+Si la BDD est vide ou corrompue :
 
 ```powershell
 cmd /c "docker exec -i mysql.db.ressource mysql -u user -puser ressource < mysql\mysql_docker.sql"
 ```
-
-Ce fichier contient toute la structure (tables, index, clés étrangères) et les comptes de test.
 
 ---
 
@@ -192,130 +115,86 @@ Ce fichier contient toute la structure (tables, index, clés étrangères) et le
 
 | Problème | Solution |
 |----------|----------|
-| "Erreur de connexion au serveur" sur le site | Vérifier que le backend est lancé : `docker ps` doit montrer `backend.ressource` |
-| Images/vidéos ne s'affichent pas | Vérifier que NGINX est lancé : `docker ps` doit montrer `nginx.media.ressource` |
-| L'app mobile ne se connecte pas | Vérifier que l'IP dans `mobile/src/config/api.ts` correspond à votre machine |
-| Docker ne démarre pas | Ouvrir Docker Desktop et attendre qu'il soit prêt |
-| Port déjà utilisé | `docker compose down` dans le dossier concerné, puis relancer |
-| Upload échoue (fichier trop gros) | PHP accepte jusqu'à 200 MB. Rebuild : `docker compose up --build -d` dans `backend/` |
-| "Impossible de charger le profil" | `docker exec backend.ressource php bin/console doctrine:schema:validate` |
-| BDD vide ou incohérente | Réinitialiser (voir section ci-dessus) |
+| "Erreur de connexion au serveur" | Vérifier : `docker ps` doit montrer `backend.ressource` Up |
+| Images/vidéos ne s'affichent pas | Vérifier : `docker ps` doit montrer `nginx.media.ressource` Up |
+| L'app mobile ne se connecte pas | Vérifier l'IP dans `mobile/src/config/api.ts` |
+| Conteneur en conflit (nom déjà utilisé) | `docker rm -f <nom>` puis relancer |
+| Upload échoue (fichier trop gros) | PHP configuré pour 200 MB max. Rebuild : `docker compose up --build -d` |
+| "Impossible de charger le profil" | JWT manquant : `docker exec backend.ressource php bin/console lexik:jwt:generate-keypair --overwrite` |
+| BDD vide | Réinitialiser (voir section ci-dessus) |
 
 ---
 
 ## Tests
 
-> **Important :** Les tests backend s'exécutent **uniquement via Docker** (le code PHP et ses dépendances vivent dans le conteneur). Les boutons "Run Test" de l'éditeur ne fonctionneront pas pour le backend.
+> **Important :** Les tests backend s'exécutent **uniquement via Docker**.
 
-### Tests backend (PHPUnit)
-
-Les tests nécessitent que les conteneurs MySQL et Backend soient lancés.
+### Tests backend (PHPUnit) — 26 tests
 
 ```powershell
-# Lancer tous les tests (26 tests)
+# Tous les tests
 docker exec -e APP_ENV=test backend.ressource php bin/phpunit
 
-# Avec détail par test
+# Avec détail
 docker exec -e APP_ENV=test backend.ressource php bin/phpunit --testdox
-```
 
-#### Lancer un groupe de tests spécifique
-
-```powershell
-# Tests unitaires uniquement (Entity — pas de BDD)
-docker exec -e APP_ENV=test backend.ressource php bin/phpunit tests/Unit/
-
-# Tests fonctionnels (Login, Registration)
-docker exec -e APP_ENV=test backend.ressource php bin/phpunit tests/Functional/
-
-# Tests d'intégration (flux complet)
-docker exec -e APP_ENV=test backend.ressource php bin/phpunit tests/Integration/
-```
-
-#### Lancer un seul fichier ou un seul test
-
-```powershell
-# Un fichier
+# Un fichier spécifique
 docker exec -e APP_ENV=test backend.ressource php bin/phpunit tests/Unit/Entity/UserTest.php
 
-# Un test précis (par nom de méthode)
+# Un test par nom
 docker exec -e APP_ENV=test backend.ressource php bin/phpunit --filter testSetEmail
 ```
 
-#### Liste des tests backend
-
 | Fichier | Type | Ce qu'il teste |
 |---------|------|----------------|
-| `tests/Unit/Entity/UserTest.php` | Unitaire | Création User, UUID, rôles, RGPD, soft delete |
-| `tests/Unit/Entity/ResourceTest.php` | Unitaire | Création Resource, statut, compteurs, type |
-| `tests/Functional/LoginTest.php` | Fonctionnel | Connexion valide, mot de passe invalide |
-| `tests/Functional/RegistrationTest.php` | Fonctionnel | Inscription, champs manquants, doublon email |
-| `tests/Integration/FullFlowTest.php` | Intégration | Flux complet utilisateur, reset mot de passe |
-| `tests/Controller/HomeControllerTest.php` | Fonctionnel | Endpoint public /api/public/resources |
+| `tests/Unit/Entity/UserTest.php` | Unitaire | UUID, rôles, RGPD, soft delete |
+| `tests/Unit/Entity/ResourceTest.php` | Unitaire | Création, statut, compteurs, type |
+| `tests/Functional/LoginTest.php` | Fonctionnel | Connexion valide / invalide |
+| `tests/Functional/RegistrationTest.php` | Fonctionnel | Inscription, champs manquants, doublon |
+| `tests/Integration/FullFlowTest.php` | Intégration | Flux complet, reset mot de passe |
+| `tests/Controller/HomeControllerTest.php` | Fonctionnel | Endpoint public resources |
 
----
-
-### Tests mobile (Jest)
-
-Les tests mobile s'exécutent en local (Node.js requis).
+### Tests mobile (Jest) — 23 tests
 
 ```powershell
 cd mobile
-
-# Lancer tous les tests (23 tests)
 npm test -- --watchAll=false
 ```
 
-#### Lancer un fichier ou un test spécifique
-
-```powershell
-cd mobile
-
-# Un fichier
-npx jest __tests__/services/authService.test.ts --watchAll=false
-
-# Un test par nom
-npx jest --testNamePattern="should login" --watchAll=false
-
-# Avec couverture de code
-npx jest --coverage --watchAll=false
-```
-
-#### Liste des tests mobile
-
 | Fichier | Ce qu'il teste |
 |---------|----------------|
-| `__tests__/services/authService.test.ts` | Login, register, getMe, stockage token |
-| `__tests__/services/resourceService.test.ts` | Liste ressources, détail, upload, catégories |
-| `__tests__/services/favoriteService.test.ts` | Ajout/suppression favoris, liste |
-| `__tests__/components/RecaptchaModal.test.tsx` | Affichage modal CAPTCHA, callback token |
+| `__tests__/services/authService.test.ts` | Login, register, token |
+| `__tests__/services/resourceService.test.ts` | Ressources, upload, catégories |
+| `__tests__/services/favoriteService.test.ts` | Ajout/suppression favoris |
+| `__tests__/components/RecaptchaModal.test.tsx` | Modal CAPTCHA |
 
 ---
 
-## Structure de l'application mobile
+## Sécurité
+
+Le plan de sécurisation complet est dans `docs/plan-securisation.md`. Points clés :
+
+- **HTTPS** : NGINX reverse proxy avec TLS (certificat auto-signé en dev, CERTBOT en production)
+- **JWT** : Token RS256, durée 8h (`lexik/jwt-authentication-bundle`)
+- **Mots de passe** : bcrypt cost 13 (jamais en clair)
+- **Injections SQL** : Doctrine ORM (paramètres liés, pas de SQL brut)
+- **CORS** : `nelmio/cors-bundle` avec regex sur les origines autorisées
+- **RGPD** : Consentements explicites datés, soft delete, droit d'accès
+- **Conteneurisation** : Services isolés, réseau Docker interne, ports minimaux
+- **Firewall** : Contrôle d'accès par rôle (`security.yaml`)
+
+---
+
+## Architecture backend (couches)
 
 ```
-mobile/
-├── App.tsx                         # Point d'entrée
-├── src/
-│   ├── config/api.ts               # Configuration URLs API
-│   ├── context/AuthContext.tsx      # Authentification globale
-│   ├── components/                  # Composants réutilisables
-│   ├── navigation/                  # Navigation (tabs + stack)
-│   ├── screens/                     # Écrans de l'application
-│   │   ├── HomeScreen.tsx           # Liste des ressources
-│   │   ├── ResourceDetailScreen.tsx # Détail + vidéo + commentaires
-│   │   ├── CreateResourceScreen.tsx # Upload de ressource
-│   │   ├── FavoritesScreen.tsx      # Favoris
-│   │   ├── ProfileScreen.tsx        # Profil utilisateur
-│   │   ├── LoginScreen.tsx          # Connexion
-│   │   ├── RegisterScreen.tsx       # Inscription + anti-robot
-│   │   ├── ModerationScreen.tsx     # Modération (modérateur+)
-│   │   ├── AdminScreen.tsx          # Stats + utilisateurs (admin+)
-│   │   └── SuperAdminScreen.tsx     # Création comptes + logs
-│   └── services/                    # Appels API
-└── __tests__/                       # Tests unitaires
+Controller  → Reçoit les requêtes HTTP, retourne les réponses JSON
+Service     → Porte l'intelligence fonctionnelle (règles métier)
+Repository  → Accède à la base de données (requêtes via Doctrine)
+Entity      → Modèle de données (mapping ORM)
 ```
+
+---
 
 ## Fonctionnalités par rôle
 
