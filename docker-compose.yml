@@ -109,6 +109,25 @@ services:
       - ./nginx/media/videos:/var/www/media/videos:ro
     entrypoint: /bin/sh -c "if [ ! -f /etc/nginx/ssl/fullchain.pem ]; then apk add --no-cache openssl && sh /etc/nginx/ssl/generate-cert.sh; fi && nginx -g 'daemon off;'"
 
+  # ============================
+  # SonarQube — Analyse qualité du code
+  # ============================
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sonarqube.ressource
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+
 volumes:
   mysql_data:
   backend_vendor:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
