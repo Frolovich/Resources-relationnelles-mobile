@@ -98,6 +98,7 @@ Pour le frontend React : `Ctrl+C` dans le terminal.
 | Médias (NGINX) | http://localhost:8080 |
 | HTTPS (NGINX) | https://localhost (certificat auto-signé) |
 | Adminer (BDD) | http://localhost:8103 |
+| SonarQube | http://localhost:9000 (admin/admin) |
 
 ---
 
@@ -170,6 +171,32 @@ npm test -- --watchAll=false
 
 ---
 
+## Déploiement (CI/CD + Infrastructure as Code)
+
+Le plan de déploiement complet est dans `docs/plan-deploiement.md`. Points clés :
+
+- **Versioning** : Git + GitHub, GitHub Flow, versionnement sémantique (tags `vX.Y.Z`)
+- **CI** (`.github/workflows/ci.yml`) : tests PHPUnit + Jest, audit de sécurité, analyse SonarCloud
+- **CD** (`.github/workflows/cd.yml`) : build des images Docker → publication sur GHCR → déploiement par environnement
+- **Environnements** : QA, préproduction, production (voir `docker-compose.prod.yml`)
+- **Infrastructure as Code** : `Terraform` (crée l'infra) → `Ansible` (configure) → `Docker` (exécute)
+  - `deploy/terraform/` — provisionnement (réseau, volumes, serveur) — voir `deploy/terraform/README.md`
+  - `deploy/ansible/` — configuration + déploiement — voir `deploy/README.md`
+- **Contexte pédagogique** : Terraform (provider Docker) et Ansible sont jouables en local, sans hébergement payant
+
+```powershell
+# 1. Provisionner l'infrastructure (Terraform via Docker, sans installation)
+cd deploy/terraform
+docker run --rm -v "${PWD}:/work" -w /work -v /var/run/docker.sock:/var/run/docker.sock hashicorp/terraform:latest init
+docker run --rm -v "${PWD}:/work" -w /work -v /var/run/docker.sock:/var/run/docker.sock hashicorp/terraform:latest apply -auto-approve
+
+# 2. Configurer + déployer (Ansible, exemple QA)
+cd ../ansible
+ansible-playbook -i inventory.ini playbook.yml --limit qa --ask-vault-pass
+```
+
+---
+
 ## Sécurité
 
 Le plan de sécurisation complet est dans `docs/plan-securisation.md`. Points clés :
@@ -178,6 +205,8 @@ Le plan de sécurisation complet est dans `docs/plan-securisation.md`. Points cl
 - **JWT** : Token RS256, durée 8h (`lexik/jwt-authentication-bundle`)
 - **Mots de passe** : bcrypt cost 13 (jamais en clair)
 - **Injections SQL** : Doctrine ORM (paramètres liés, pas de SQL brut)
+- **Chiffrement BDD** : MySQL InnoDB encryption at rest (`innodb-encrypt-tables=ON`)
+- **SonarQube** : Analyse qualité du code (http://localhost:9000)
 - **CORS** : `nelmio/cors-bundle` avec regex sur les origines autorisées
 - **RGPD** : Consentements explicites datés, soft delete, droit d'accès
 - **Conteneurisation** : Services isolés, réseau Docker interne, ports minimaux
