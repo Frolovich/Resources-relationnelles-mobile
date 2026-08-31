@@ -1,0 +1,9 @@
+# ==============================================
+# Terraform — Modèle de variables
+# ==============================================
+# Copier en terraform.tfvars et adapter :
+#   cp terraform.tfvars.example terraform.tfvars
+
+project_name = "ressources-relationnelles"
+environment  = "qa"
+server_image = "debian:12-slim"

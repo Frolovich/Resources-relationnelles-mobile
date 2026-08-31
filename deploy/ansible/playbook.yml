@@ -1,0 +1,123 @@
+---
+# ==============================================
+# Ansible — Déploiement (Re)Sources Relationnelles
+# ==============================================
+# Automatise la configuration du serveur et le déploiement de l'application
+# conteneurisée. Remplace la configuration manuelle (DevSecOps).
+#
+# Étapes :
+#   1. Installer les prérequis (Docker, Docker Compose, git)
+#   2. Récupérer le code source
+#   3. Générer le fichier .env depuis les variables d'environnement / vault
+#   4. Démarrer les conteneurs
+#   5. Jouer les migrations de base de données
+#   6. Vérifier la santé de l'application
+#
+# Usage :
+#   ansible-playbook -i inventory.ini playbook.yml --limit qa
+#   ansible-playbook -i inventory.ini playbook.yml --limit local   (démo pédagogique)
+# ==============================================
+
+- name: Déployer (Re)Sources Relationnelles
+  hosts: all
+  become: true
+
+  vars:
+    repo_url: "https://github.com/Frolovich/Resources-relationnelles-mobile.git"
+    git_version: "{{ deploy_ref | default('main') }}"
+
+  tasks:
+
+    # ----------------------------------------------------
+    # 1. Prérequis système
+    # ----------------------------------------------------
+    - name: Mettre à jour le cache des paquets
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Installer les dépendances de base
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - git
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Installer Docker (script officiel)
+      ansible.builtin.shell: |
+        curl -fsSL https://get.docker.com | sh
+      args:
+        creates: /usr/bin/docker
+
+    - name: S'assurer que le service Docker est démarré
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    # ----------------------------------------------------
+    # 2. Code source
+    # ----------------------------------------------------
+    - name: Cloner / mettre à jour le dépôt
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ project_dir }}"
+        version: "{{ git_version }}"
+        force: true
+
+    # ----------------------------------------------------
+    # 3. Configuration (.env) — secrets injectés hors du code
+    # ----------------------------------------------------
+    - name: Générer le fichier .env depuis le modèle
+      ansible.builtin.template:
+        src: env.j2
+        dest: "{{ project_dir }}/.env"
+        mode: "0600"
+
+    # ----------------------------------------------------
+    # 4. Démarrage des conteneurs
+    # ----------------------------------------------------
+    - name: Tirer les images Docker
+      community.docker.docker_compose_v2:
+        project_src: "{{ project_dir }}"
+        files:
+          - docker-compose.prod.yml
+        pull: always
+
+    - name: Démarrer les services
+      community.docker.docker_compose_v2:
+        project_src: "{{ project_dir }}"
+        files:
+          - docker-compose.prod.yml
+        state: present
+
+    # ----------------------------------------------------
+    # 5. Migrations base de données
+    # ----------------------------------------------------
+    - name: Jouer les migrations Doctrine
+      ansible.builtin.command:
+        cmd: >-
+          docker compose -f docker-compose.prod.yml exec -T backend
+          php bin/console doctrine:migrations:migrate --no-interaction
+        chdir: "{{ project_dir }}"
+      register: migration_result
+      changed_when: "'No migrations to execute' not in migration_result.stdout"
+
+    # ----------------------------------------------------
+    # 6. Vérification de santé
+    # ----------------------------------------------------
+    - name: Attendre que l'API réponde
+      ansible.builtin.uri:
+        url: "http://localhost/api"
+        status_code: [200, 401]
+      register: health
+      retries: 10
+      delay: 5
+      until: health.status in [200, 401]
+
+    - name: Résultat du déploiement
+      ansible.builtin.debug:
+        msg: "Déploiement terminé — API répond avec le code {{ health.status }}"

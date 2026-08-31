@@ -1,0 +1,9 @@
+# Terraform — fichiers à ne jamais versionner
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+
+# Le lock file .terraform.lock.hcl EST versionné (verrouille les versions de providers)

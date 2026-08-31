@@ -1,0 +1,29 @@
+---
+# ==============================================
+# Ansible — Variables (MODÈLE)
+# ==============================================
+# Copier en group_vars/all.yml et remplir les vraies valeurs.
+# Pour les secrets, utiliser Ansible Vault :
+#   ansible-vault encrypt group_vars/all.yml
+#   ansible-playbook -i inventory.ini playbook.yml --ask-vault-pass
+# NE JAMAIS versionner les vraies valeurs.
+# ==============================================
+
+# Base de données
+mysql_root_password: "change_me_root"
+mysql_database: "ressource"
+mysql_user: "change_me_user"
+mysql_password: "change_me_password"
+
+# Backend Symfony
+app_secret: "change_me_32_char_random_secret"
+jwt_passphrase: "change_me_jwt_passphrase"
+cors_allow_origin: '^https?://(www\.)?ressources-relationnelles\.fr$'
+backend_image: "ghcr.io/frolovich/resources-relationnelles-mobile/backend:latest"
+
+# Mailer
+mailer_dsn: "smtp://user:password@smtp.example.com:587"
+mailer_from: "noreply@ressources-relationnelles.fr"
+
+# Référence Git à déployer (branche ou tag)
+deploy_ref: "main"
