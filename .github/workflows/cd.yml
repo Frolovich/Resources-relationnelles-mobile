@@ -1,0 +1,188 @@
+name: CD
+
+# Déploiement continu : build des images, publication GHCR, déploiement par environnement
+#   - merge sur develop      → déploiement QA (automatique)
+#   - branche release/*      → déploiement préproduction (automatique)
+#   - tag vX.Y.Z             → déploiement production (approbation manuelle)
+on:
+  push:
+    branches: [develop]
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environnement cible'
+        required: true
+        default: 'qa'
+        type: choice
+        options: [qa, preprod, production]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BACKEND: ghcr.io/${{ github.repository }}/backend
+
+jobs:
+  # ============================================================
+  # 1. Build + publication de l'image backend dans GHCR
+  # ============================================================
+  build-backend:
+    name: Build & push backend image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata (tags)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_BACKEND }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================
+  # 2. Build du frontend web (artefact statique)
+  # ============================================================
+  build-frontend:
+    name: Build frontend web
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install & build
+        run: |
+          npm ci
+          npm run build
+        env:
+          CI: false
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: build/
+
+  # ============================================================
+  # 3. Déploiement QA (merge sur develop)
+  # ============================================================
+  deploy-qa:
+    name: Deploy to QA
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'qa')
+    environment:
+      name: qa
+      url: https://qa.ressources-relationnelles.fr
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy with Ansible (QA)
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: playbook.yml
+          directory: deploy/ansible
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          inventory: |
+            [qa]
+            ${{ secrets.QA_HOST }} ansible_user=${{ secrets.DEPLOY_USER }}
+          options: |
+            --limit qa
+            --extra-vars "deploy_ref=develop"
+          vault_password: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+
+  # ============================================================
+  # 4. Déploiement préproduction (branche release/*)
+  # ============================================================
+  deploy-preprod:
+    name: Deploy to preproduction
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    if: startsWith(github.ref, 'refs/heads/release/') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'preprod')
+    environment:
+      name: preprod
+      url: https://preprod.ressources-relationnelles.fr
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy with Ansible (preprod)
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: playbook.yml
+          directory: deploy/ansible
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          inventory: |
+            [preprod]
+            ${{ secrets.PREPROD_HOST }} ansible_user=${{ secrets.DEPLOY_USER }}
+          options: |
+            --limit preprod
+            --extra-vars "deploy_ref=${{ github.ref_name }}"
+          vault_password: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+
+  # ============================================================
+  # 5. Déploiement production (tag vX.Y.Z, approbation manuelle)
+  # ============================================================
+  deploy-production:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    # L'environnement "production" doit être configuré avec "Required reviewers"
+    # dans GitHub → Settings → Environments (approbation manuelle avant déploiement)
+    environment:
+      name: production
+      url: https://api.ressources-relationnelles.fr
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy with Ansible (production)
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: playbook.yml
+          directory: deploy/ansible
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          inventory: |
+            [production]
+            ${{ secrets.PROD_HOST }} ansible_user=${{ secrets.DEPLOY_USER }}
+          options: |
+            --limit production
+            --extra-vars "deploy_ref=${{ github.ref_name }}"
+          vault_password: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
