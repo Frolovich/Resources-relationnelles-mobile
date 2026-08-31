@@ -51,7 +51,7 @@ WORKDIR /var/www/backend
 
 # Copier composer files d'abord (cache Docker)
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-source
 
 # Copier le code
 COPY . .
