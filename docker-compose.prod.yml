@@ -1,0 +1,108 @@
+# ==============================================
+# (Re)Sources Relationnelles — Docker Compose PRODUCTION
+# ==============================================
+# Usage sur le serveur (QA / préprod / prod) :
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Différences avec docker-compose.yml (dev) :
+#   - Pas d'Adminer ni de SonarQube (outils de dev uniquement)
+#   - Image backend tirée depuis GHCR (pas de build local)
+#   - Secrets injectés via variables d'environnement (.env)
+#   - MySQL non exposé sur l'hôte (réseau interne uniquement)
+#   - HTTPS activé (NGINX + certificats)
+# ==============================================
+
+name: ressources-relationnelles-prod
+
+services:
+
+  # ============================
+  # MySQL 8.2 — Base de données
+  # ============================
+  mysql:
+    image: mysql:8.2.0
+    container_name: mysql.db.ressource
+    hostname: mysql.db.ressource
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?required}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ressource}
+      MYSQL_USER: ${MYSQL_USER:?required}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?required}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+    # Pas de "ports" exposés vers l'hôte : accessible uniquement via le réseau interne
+    expose:
+      - "3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command:
+      - --innodb-encrypt-tables=ON
+      - --innodb-encrypt-log=ON
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  # ============================
+  # Backend Symfony (image GHCR)
+  # ============================
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/frolovich/resources-relationnelles-mobile/backend:latest}
+    container_name: backend.ressource
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    expose:
+      - "80"
+    volumes:
+      - media_data:/var/www/media
+      - jwt_keys:/var/www/backend/config/jwt
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      APP_SECRET: ${APP_SECRET:?required}
+      DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql.db.ressource:3306/${MYSQL_DATABASE:-ressource}?serverVersion=8.2&charset=utf8mb4"
+      JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+      JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE:?required}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN:?required}
+      MAILER_DSN: ${MAILER_DSN:?required}
+      MAILER_FROM: ${MAILER_FROM:?required}
+    networks:
+      - internal
+
+  # ============================
+  # NGINX — Reverse proxy + médias + HTTPS
+  # ============================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nginx.ressource
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - media_data:/var/www/media:ro
+      - certbot_certs:/etc/letsencrypt:ro
+    networks:
+      - internal
+
+volumes:
+  mysql_data:
+  media_data:
+  jwt_keys:
+  certbot_certs:
+
+networks:
+  internal:
+    driver: bridge
